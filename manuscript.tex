@@ -145,6 +145,8 @@ Second, we use the benchmark to study how models should be asked to formalize, a
 
 
 \section{Related works}
+
+\shivam{the related works needs rewrite, I'll have to think about what bifurcation makes sense but it needs to be one level of abstraction higher. So something like 1. Autoformalization for scalable oversight: {all papers that are not directly related to our work but broadly supporting our motivation} 2.Faithfulness problem in autoformalization 3. something around semantic parsing}
 \paragraph{Informalization for data generation}
 The strongest current autoformalizers are language models fine-tuned on formal-informal pairs.~\cite{gao2025herald,kimina2025,lin2025goedel}. Oftentimes, their training data is manufactured by having an LLM informalize an existing formal library.~\cite{jiang2023mma,gao2025herald,ying2024leanworkbook,xin2024deepseekprover}. We use informalization for the opposite purpose: performed by a deterministic renderer rather than a model, it yields an evaluation oracle instead of training data. This enables an injective mapping from  informal stories to  formal sentences.  
  
@@ -159,7 +161,8 @@ Passing through an intermediate representation on the way to a formal target is 
 
 
 \section{Benchmark \shivam{Give it a flashy name}}
-Faithfulness is hard to grade because grading requires already knowing what
+
+\shivam{we dont need to give justification for why we are making a benchmark inside the benchmark section, AI really likes doing that for some reason...? We should just start with the main point, and into describing the dataset creation} Faithfulness is hard to grade because grading requires already knowing what
 the informal text meant. The benchmark obtains that knowledge by
 construction: instead of collecting informal mathematics and debating what
 its formalization should have been, it starts from the formal statement and
