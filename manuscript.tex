@@ -154,7 +154,20 @@ The strongest current autoformalizers are language models fine-tuned on formal-i
 Type-checking, BLEU, and exact match are blind to meaning and correlate poorly with human judgment~\cite{wu2022autoformalization,azerbayev2023proofnet,poiroux2025reliable}. The alternatives can be sorted by what they trust. Human-labelled sets such as ProofNetVerif~\cite{poiroux2025reliable}, ConsistencyCheck~\cite{chen2025reform}, CriticLeanBench~\cite{criticlean2025}, and MA-Align~\cite{mathatlas2026} allow metrics to be meta-evaluated, but they are expensive to build, and the references they rest on are themselves unreliable: annotation found 16.4\% of the human-written formal statements in miniF2F and 38.5\% of those in ProofNet to be semantically wrong~\cite{chen2025reform}. Model-based methods trust a language model as a judge~\cite{ying2024leanworkbook,lin2025goedel,kimina2025}, a trained critic~\cite{lu2025formalalign,criticlean2025,mathesis2025}, or a back-translator~\cite{patel2024newsymbol,li2024symbolic}; the best judges agree with experts about 86\% of the time~\cite{chen2025reform}, and in specification autoformalization a judge missed a quarter of the failures that an executable check caught~\cite{verusspecgym2026}. Prover-based methods trust an automated prover to establish equivalence with a reference~\cite{liu2025rethinking,poiroux2025reliable,murphy2024leaneuclid,liu2025gted}, and so need both a reference and a proof search that may time out. Every method above needs a human, a model, or an incomplete prover somewhere in the loop. We reverse the direction of translation so that it is available by construction. The price is a narrower criterion, feasible only because the target language is small.
  
 \paragraph{Synthetic language with exact ground truth.}
-Templated stories built from formal structures underlie a family of reasoning benchmarks~\cite{weston2015babi,sinha2019clutrr,clark2020ruletaker,tafjord2021proofwriter,han2022folio,satbench2025,zebralogic2025}, and substrates outside the training distribution have been used to defeat memorization in autoformalization~\cite{liu2025rethinking,poiroux2025reliable,patel2024newsymbol}. Our use is different in kind: the story is a translation target, not a puzzle, and the truth value of the implication is withheld.
+Synthetic and semi-synthetic reasoning benchmarks construct
+natural-language problems from controlled underlying
+structures~\citep{weston2015babi,sinha2019clutrr,clark2020ruletaker,tafjord2021proofwriter}.
+ZebraLogic uses clue templates~\citep{zebralogic2025},
+whereas SATBench uses LLMs to render SAT formulas as
+narratives~\citep{satbench2025}. FOLIO combines expert-written
+and template-assisted stories and also evaluates
+natural-language-to-first-order-logic translation~\citep{han2022folio}.
+Newer formal projects have been used to reduce contamination
+risk in autoformalization evaluation~\citep{poiroux2025reliable}.
+We use deterministic renderers to produce paired story and
+literal descriptions, then score how accurately models recover
+the source statements under the accepted symmetries. Models
+are not asked to determine whether the implications hold.
  
 \paragraph{Staged formalization.}
 Passing through an intermediate representation on the way to a formal target is an old idea in semantic parsing, whether a canonical utterance~\cite{shin2021constrained} or an intermediate query language~\cite{guo2019irnet,gan2021natsql}. Prompting methods that first abstract a problem~\cite{zheng2023stepback} or draft an informal sketch~\cite{jiang2023dsp} follow the same pattern, and formalize-then-solve pipelines identify translation as a major source of error~\cite{olausson2023linc,pan2023logiclm,ye2023satlm,lyu2023faithfulcot}, motivating decomposition of the translation step~\cite{ryu2024divide}. The remedies proposed for autoformalization add a verifier or a feedback loop: reflective refinement~\cite{chen2025reform}, faithfulness-guided decoding~\cite{mohammad2026faithfulness}, or reranking candidates by symbolic equivalence~\cite{li2024symbolic}. Our two-stage route uses neither. It changes only how the model is asked, and it composes with any of them.
