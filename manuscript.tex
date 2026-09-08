@@ -53,6 +53,8 @@
 
 \newcommand{\denis}[1]{\textcolor{red}{(Denis: #1)}}
 
+\newcommand{\harsh}[1]{\textcolor{olive}{(Harsh: #1)}}
+
 
 \author{%
   David S.~Hippocampus\thanks{Use footnote for providing further information
@@ -101,11 +103,17 @@
 \section{Introduction}
 \subsection{Motivation}
 Autoformalization has become a core component of current theorem-proving
-pipelines and automated reasoning systems, but its appeal extends beyond mathematics. \shivam{maybe add a sentence on autoformalization here} Representing a
-natural-language statement as a formal structure makes it cheaply verifiable,
-and thus promises an oversight mechanism where the verification cost does not scale with task
-difficulty \shivam{add some refs}. For complex tasks, models might produce long or technically involved responses that reviewing them directly might be impractical, but if they were represented as a formal
-statement, a weaker verifier can confirm the work of a stronger reasoner. There is a caveat: this approach assumes that the models can extract and process formal structures from verbose and noisy natural language.
+pipelines and automated reasoning systems, but its appeal extends beyond mathematics. By translating informal statements into formal
+specifications~\citep{wu2022autoformalization}, it provides
+a starting point for checking whether a model's output
+satisfies an explicitly stated requirement. \shivam{maybe add a sentence on autoformalization here} \harsh{done} This motivates an approach to automated oversight in which
+a model's output is verified against a formal
+specification~\citep{dalrymple2024gsai}. For complex tasks,
+models might produce responses so long or technically
+involved that reviewing them directly is impractical.
+If the model supplies formal statements and corresponding
+proofs, a proof checker can check those proofs against
+the statements~\citep{demoura2021lean4}. There is a caveat: this approach assumes that the models can extract and process formal structures from verbose and noisy natural language.
 
 %\subsubsection{Background}
 %Formalization is the process of capturing the logical meaning of a natural-language statement in a formal language: one with a rigid grammar and a fixed semantics. For mathematics and logic, the value of formalization lies in what it makes possible afterward. Once a problem has been stated formally, a proposed solution can be checked mechanically by the kernel of a proof assistant such as Lean [cite], a small trusted program that only accepts correct proofs. This is what allows large collaborative results to be trusted without any single participant checking the whole [cite], and it is what makes formal languages the natural target for automated reasoning systems, since a machine-checked proof needs no further review.
@@ -113,13 +121,20 @@ statement, a weaker verifier can confirm the work of a stronger reasoner. There 
 
 %, and few people have both. Formalizing even a routine statement requires fluency in both the mathematics and the formal system \textit{Autoformalization}, the automatic translation of informal mathematics into formal statements, now typically performed by a large language model, has accordingly attracted wide interest [cite]. 
 
-To utilize current large language models for such automated oversight systems, one of the bottlenecks is the translation from informal natural language to formal language itself. A natural question arises: how does one know that a formalization is faithful, or that the formal statement means what the informal one meant? A formalization can be well-formed, and even provable, while meaning something other than its source. We call this failure mode \textit{semantic drift}. \shivam{an example of such drift, cite gaming autoformalization papers?} This drift is difficult to detect because the subsequent stages of the pipeline do not see unstructured natural language. A proof assistant can only check a proof against the statement it is provided rather than the one
+To utilize current large language models for such automated oversight systems, one of the bottlenecks is the translation from informal natural language to formal language itself. A natural question arises: how does one know that a formalization is faithful, or that the formal statement means what the informal one meant? A formalization can be well-formed, and even provable, while meaning something other than its source. We call this failure mode \textit{semantic drift}. For example, a model can mistranslate a premise so that
+it becomes identical to the conclusion, allowing a trivial
+proof of the resulting formal
+statement~\citep{kim2026gaming}. \shivam{an example of such drift, cite gaming autoformalization papers?} \harsh{done} A proof assistant can only check a proof against the statement it is provided rather than the one
 that was intended, and the same failure propagates to benchmarks assembled by
 autoformalization and to provers trained on the resulting pairs. Consequently, a prover trained on semantically drifted pairs learns a drifted mapping.
 
 %It is a source of error that is easy to overlook precisely because the downstream machinery cannot see it. A proof assistant will verify a proof of the wrong theorem without complaint; a benchmark assembled by autoformalization measures whatever its translated statements happen to say; a prover trained on drifted pairs learns a drifted mapping.
 
-This form of semantic faithfulness is also difficult to verify without a human judge. The usual substitute is a language model acting as judge, but the model can miss a mismatch or invent one, and it is prone to the same misreadings as the model it is judging \shivam{support this statement with a citation}. The practical consequence is that faithfulness cannot be measured cheaply enough to iterate on. 
+This form of semantic faithfulness is also difficult to verify without a human judge. A common substitute is a language model acting as judge,
+but it can accept an incorrect formalization or reject
+a correct one~\citep{kimina2025,chen2025reform}. \shivam{support this statement with a citation} \harsh{done} This motivates a controlled evaluation setting in which
+reference construction and scoring do not depend on
+human or model judgments.
 
 \subsubsection{Concrete problem}
 
