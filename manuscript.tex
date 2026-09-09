@@ -142,22 +142,49 @@ human or model judgments.
 
 \subsubsection{Contributions}
 
-\shivam{general norm is 1 para on what we a contributing, and describing our main results, then a concise bulleted list of contirbutions, and finally a closing para with some broader implications}
+\shivam{general norm is 1 para on what we a contributing, and describing our main results, then a concise bulleted list of contirbutions, and finally a closing para with some broader implications} \harsh{rewrote the section}
+
+We introduce a benchmark that measures formalization
+faithfulness deterministically, with neither a human grader
+nor a language-model as a judge. We start from a formal statement
+and \textit{informalize} it, with a deterministic template
+renderer, into a natural-language story. A model is shown
+the story and asked to recover the statement. We use the
+benchmark to study how models should be asked to formalize.
+With reasoning disabled, splitting the task into an
+abstraction step followed by formalization closes most
+of the gap between one-shot formalization of the story
+and formalization of a literal description written by
+the renderer itself.
 
 Our main contributions are as follows:
-\begin{enumerate}
-  \item We introduce \textit{benchmark}, a....
-  \item We show that ....
-  \item something else.
-\end{enumerate}
+\begin{itemize}
+    \item We introduce a benchmark using the Equational
+    Theories Project (ETP)~\citep{bolan2025etp}, which maps
+    implications of magma operation equations. A model's
+    answer is parsed and compared with the source modulo
+    a small, enumerated group of symmetries. The known
+    truth values of the implications are deliberately
+    unused, because the benchmark scores the translation
+    of a claim, not reasoning about whether the claim holds.
 
-Taken together....
+    \item We study a two-stage route to formalization.
+    In the first stage, the model performs an abstraction
+    step from natural language to natural language:
+    it rewrites the story to discard the narrative and
+    keep only the logical core. In the second stage,
+    it formalizes that abstraction into our target
+    language. We compare this route with one-shot
+    formalization of the story and of the renderer's
+    literal description.
+\end{itemize}
 
-
-First, we introduce a benchmark that measures formalization faithfulness deterministically, with neither a human grader nor a language-model judge. We start from a formal statement whose meaning is known exactly and \textit{informalize} it, with a deterministic template renderer, into a natural-language story. Since the renderer's grammar is injective, the story alone determines the statement it came from. A model is shown only the story and asked to recover the statement. Its answer is parsed and compared with the source modulo a small, enumerated group of symmetries that are faithful readings of the text. Semantic drift is observed directly as a well-formed answer that denotes a different statement. As substrate we use the Equational Theories Project (ETP) [Tao et al., 2025] which maps implications of magma operation equations. These statements are formally exact, uniform in shape, and essentially absent from natural-language pretraining data; their known truth values are deliberately unused, because the benchmark scores the translation of a claim, not reasoning about whether the claim holds. 
-
-Second, we use the benchmark to study how models should be asked to formalize, and find that they are most faithful when the task is split in two stages. In the first stage the model performs an abstraction step from natural language to natural language: it rewrites the story to discards the narrative and keeps only the logical core. In the second stage it formalizes that abstraction into our target language. This two-stage route closes most of the gap between one-shot formalization of the story and formalization of a literal description written by the renderer itself, which serves as an approximate ceiling for what perfect abstraction would allow. 
-
+The two-stage results suggest that separating abstraction
+from formalization can help models recover the logical
+content of a story. By starting from formal statements
+and manufacturing their informal descriptions, the
+benchmark makes it possible to study this process with
+deterministic grading.
 
 \section{Related works}
 
