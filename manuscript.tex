@@ -36,7 +36,7 @@
 \usepackage{xcolor}         % colors
 
 % Note. For the workshop paper template, both \title{} and \workshoptitle{} are required, with the former indicating the paper title shown in the title and the latter indicating the workshop title displayed in the footnote. 
-\title{Formatting Instructions For NeurIPS 2026}
+\title{Deterministically Measuring Autoformalization Faithfulness}
 
 
 % The \author macro works with any number of authors. There are two commands
@@ -54,6 +54,10 @@
 \newcommand{\denis}[1]{\textcolor{red}{(Denis: #1)}}
 
 \newcommand{\harsh}[1]{\textcolor{olive}{(Harsh: #1)}}
+
+\newcommand{\Ke}[1]{\textcolor{blue}{(Ke: #1)}}
+
+\newcommand{\aditya}[1]{\textcolor{orange}{(aditya: #1)}}
 
 
 \author{%
@@ -90,30 +94,75 @@
 
 \begin{document}
 
-
+632960
 \maketitle
 
 
 \begin{abstract}
-  The abstract paragraph should be indented \nicefrac{1}{2}~inch (3~picas) on both the left- and right-hand margins. Use 10~point type, with a vertical spacing (leading) of 11~points. The word \textbf{Abstract} must be centered, bold, and in point size 12. Two line spaces precede the abstract. The abstract must be limited to one paragraph. \oren{This is a test}
+  Autoformalization with LLMs can enable proofs, programs, and AI-generated claims to be verified at a scale no human reviewer could match. Yet verifying the faithfulness of these formalizations without a human judge remains a challenge. We introduce a  benchmark for measuring formalization faithfulness. By deterministically rendering magma equations from the Equational Theories Project into natural-language stories that capture the same logical meaning, we obtain formal-informal pairs that are correct by construction and generated at scale. Models are then asked to recover the equation underlying each story. Evaluating nine models with reasoning disabled, we find that they achieve 50\% accuracy on story translations. We further show that decomposing the formalization task into a two-stage pipeline, where a model first abstracts the story into a bare logical statement before formalizing it, increases accuracy by 16\%. Enabling inference-time reasoning increases accuracy to 100\% for stories generated from simple equations with few magma operations, but this accuracy degrades to approximately 75\% as complexity increases.
 \end{abstract}
 
 
-
 \section{Introduction}
-\subsection{Motivation}
-Autoformalization has become a core component of current theorem-proving
-pipelines and automated reasoning systems, but its appeal extends beyond mathematics. By translating informal statements into formal
-specifications~\citep{wu2022autoformalization}, it provides
-a starting point for checking whether a model's output
-satisfies an explicitly stated requirement. \shivam{maybe add a sentence on autoformalization here} \harsh{done} This motivates an approach to automated oversight in which
-a model's output is verified against a formal
-specification~\citep{dalrymple2024gsai}. For complex tasks,
-models might produce responses so long or technically
-involved that reviewing them directly is impractical.
-If the model supplies formal statements and corresponding
-proofs, a proof checker can check those proofs against
-the statements~\citep{demoura2021lean4}. There is a caveat: this approach assumes that the models can extract and process formal structures from verbose and noisy natural language.
+
+Autoformalization translates informal natural-language statements into formal specifications that can be processed by theorem provers and other automated
+reasoning systems~\citep{wu2022autoformalization}. Its usefulness depends not only on producing syntactically valid or provable statements, but also on preserving the meaning of the source. A formal statement may admit a proof while expressing a different claim. A proof checker cannot
+detect this mismatch because it verifies the generated statement rather than its correspondence to the intended natural-language meaning ~\citep{kim2026gaming}. We refer to such a mismatch as \textit{semantic drift}.
+
+Semantic drift can occur in several ways. A model tasked with autoformalizing may misunderstand the logical content of the source, or it may understand that
+ content but fail to express it in the target formalism. In a system such as Lean ~\citep{demoura2021lean4}, formalizing requires knowledge of syntax, types, elaboration, and library conventions. These requirements make it difficult to tell whether an observed failure comes from source interpretation, target
+encoding, or the faithfulness metric itself.
+
+Detecting semantic drift is difficult. Human evaluation is expensive, while language-model judges can accept incorrect formalizations or reject correct
+ones~\citep{kimina2025,chen2025reform}. Proof-based equivalence checks require a trusted reference formalization and may still depend on incomplete proof
+search. \aditya{this claim requires a citation} As a result, existing evaluations often lack a scalable and deterministic way to determine whether the meaning of a source statement has been preserved.
+
+
+
+We construct a benchmark using implications from the Equational Theories Project (ETP)~\citep{bolan2025etp}, each of which states that one equation over a binary operation implies another. Each statement is rendered
+deterministically in two matched forms: \textit{Story}, which reimagines the equation as a natural-language narrative involving real-world objects and actions, and \textit{Literal-NL}, which
+describes the same operation structure directly in natural language without the narrative framing. We ask models to translate each description into a
+minimal, mechanically parseable grammar.
+
+The benchmark allows us to study different parts of the translation process. Translating from Story tests the model's ability to
+recover the same logical structure from a narrative. Translating from Literal-NL provides a control for the
+remaining target-encoding difficulty. We  also evaluate a two-stage pipeline in which the model is tasked to first remove the narrative flourish and then
+formalize the resulting abstraction. Together, these conditions let us ask
+how source presentation, explicit decomposition, reasoning, and structural
+complexity affect semantic preservation.
+
+Across nine models evaluated without reasoning on the same 160 ETP pairs,
+translating from Story achieves 50\% accuracy, compared with 67\% for
+Literal-NL. The two-stage pipeline reaches 66\%, recovering most of the gap
+between the two source forms. With reasoning enabled, performance rises to
+97\% for Story, 99\% for Literal-NL, and 96\% for the two-stage protocol.
+These results indicate that narrative abstraction creates a measurable
+translation cost, but that explicit decomposition or additional
+inference-time reasoning can substantially reduce it.
+
+Our main contributions are:
+
+\begin{itemize}
+    \item We introduce a controlled benchmark in which semantic preservation
+    can be graded deterministically against a retained formal source, without
+    relying on a human or language-model judge.
+
+    \item We use paired Story and Literal-NL renderings with a shared minimal
+    target grammar to distinguish the additional difficulty of narrative
+    abstraction from target encoding.
+
+    \item We evaluate how explicit two-stage abstraction, reasoning, and
+    structural complexity affect faithful recovery of the underlying formal
+    statement.
+\end{itemize}
+
+Our benchmark does not provide a general metric for arbitrary
+natural-language mathematics. Instead, it provides a controlled setting in
+which semantic mismatch is directly observable and factors that contribute to
+it can be studied separately. This offers a foundation for investigating how
+the same distinctions extend to richer natural language and practical formal
+systems.
+
 
 %\subsubsection{Background}
 %Formalization is the process of capturing the logical meaning of a natural-language statement in a formal language: one with a rigid grammar and a fixed semantics. For mathematics and logic, the value of formalization lies in what it makes possible afterward. Once a problem has been stated formally, a proposed solution can be checked mechanically by the kernel of a proof assistant such as Lean [cite], a small trusted program that only accepts correct proofs. This is what allows large collaborative results to be trusted without any single participant checking the whole [cite], and it is what makes formal languages the natural target for automated reasoning systems, since a machine-checked proof needs no further review.
@@ -121,162 +170,77 @@ the statements~\citep{demoura2021lean4}. There is a caveat: this approach assume
 
 %, and few people have both. Formalizing even a routine statement requires fluency in both the mathematics and the formal system \textit{Autoformalization}, the automatic translation of informal mathematics into formal statements, now typically performed by a large language model, has accordingly attracted wide interest [cite]. 
 
-To utilize current large language models for such automated oversight systems, one of the bottlenecks is the translation from informal natural language to formal language itself. A natural question arises: how does one know that a formalization is faithful, or that the formal statement means what the informal one meant? A formalization can be well-formed, and even provable, while meaning something other than its source. We call this failure mode \textit{semantic drift}. For example, a model can mistranslate a premise so that
-it becomes identical to the conclusion, allowing a trivial
-proof of the resulting formal
-statement~\citep{kim2026gaming}. \shivam{an example of such drift, cite gaming autoformalization papers?} \harsh{done} A proof assistant can only check a proof against the statement it is provided rather than the one
-that was intended, and the same failure propagates to benchmarks assembled by
-autoformalization and to provers trained on the resulting pairs. Consequently, a prover trained on semantically drifted pairs learns a drifted mapping.
 
-%It is a source of error that is easy to overlook precisely because the downstream machinery cannot see it. A proof assistant will verify a proof of the wrong theorem without complaint; a benchmark assembled by autoformalization measures whatever its translated statements happen to say; a prover trained on drifted pairs learns a drifted mapping.
 
-This form of semantic faithfulness is also difficult to verify without a human judge. A common substitute is a language model acting as judge,
-but it can accept an incorrect formalization or reject
-a correct one~\citep{kimina2025,chen2025reform}. \shivam{support this statement with a citation} \harsh{done} This motivates a controlled evaluation setting in which
-reference construction and scoring do not depend on
-human or model judgments.
-
-\subsubsection{Concrete problem}
-
-\shivam{Between all the intro sections, I still dont quite see a good description of the exact problem, it looks like we go from motivation straight to contribution. A para or 2 on the concrete problem (we want to measure semantic drift/formalization accuracy, etc. there is no existing benchmark, so we develop our own and investige how well the model can translate nl to formal... etc}
-
-\subsubsection{Contributions}
-
-\shivam{general norm is 1 para on what we a contributing, and describing our main results, then a concise bulleted list of contirbutions, and finally a closing para with some broader implications} \harsh{rewrote the section}
-
-We introduce a benchmark that measures formalization
-faithfulness deterministically, with neither a human grader
-nor a language-model as a judge. We start from a formal statement
-and \textit{informalize} it, with a deterministic template
-renderer, into a natural-language story. A model is shown
-the story and asked to recover the statement. We use the
-benchmark to study how models should be asked to formalize.
-With reasoning disabled, splitting the task into an
-abstraction step followed by formalization closes most
-of the gap between one-shot formalization of the story
-and formalization of a literal description written by
-the renderer itself.
-
-Our main contributions are as follows:
-\begin{itemize}
-    \item We introduce a benchmark using the Equational
-    Theories Project (ETP)~\citep{bolan2025etp}, which maps
-    implications of magma operation equations. A model's
-    answer is parsed and compared with the source modulo
-    a small, enumerated group of symmetries. The known
-    truth values of the implications are deliberately
-    unused, because the benchmark scores the translation
-    of a claim, not reasoning about whether the claim holds.
-
-    \item We study a two-stage route to formalization.
-    In the first stage, the model performs an abstraction
-    step from natural language to natural language:
-    it rewrites the story to discard the narrative and
-    keep only the logical core. In the second stage,
-    it formalizes that abstraction into our target
-    language. We compare this route with one-shot
-    formalization of the story and of the renderer's
-    literal description.
-\end{itemize}
-
-The two-stage results suggest that separating abstraction
-from formalization can help models recover the logical
-content of a story. By starting from formal statements
-and manufacturing their informal descriptions, the
-benchmark makes it possible to study this process with
-deterministic grading.
 
 \section{Related works}
 
 \shivam{the related works needs rewrite, I'll have to think about what bifurcation makes sense but it needs to be one level of abstraction higher. So something like 1. Autoformalization for scalable oversight: {all papers that are not directly related to our work but broadly supporting our motivation} 2.Faithfulness problem in autoformalization 3. something around semantic parsing}
+
+\oren{ I don't think Scalable Oversight should have a section in Related Works because our methods do not specifically target scalable oversight. I think the scalable oversight motivation should remain in the introduction}
+
 \paragraph{Informalization for data generation}
-The strongest current autoformalizers are language models fine-tuned on formal-informal pairs.~\cite{gao2025herald,kimina2025,lin2025goedel}. Oftentimes, their training data is manufactured by having an LLM informalize an existing formal library.~\cite{jiang2023mma,gao2025herald,ying2024leanworkbook,xin2024deepseekprover}. We use informalization for the opposite purpose: performed by a deterministic renderer rather than a model, it yields an evaluation oracle instead of training data. This enables an injective mapping from  informal stories to  formal sentences.  
- 
+The strongest current autoformalizers are language models fine-tuned on formal-informal pairs.~\citep{gao2025herald,kimina2025,lin2025goedel}. Oftentimes, their training data is manufactured by having an LLM informalize an existing formal library.~\citep{jiang2023mma,gao2025herald,ying2024leanworkbook,xin2024deepseekprover}. We use informalization for the opposite purpose: performed by a deterministic renderer rather than a model, it yields an evaluation oracle instead of training data. This enables an exact ground truth formalization.  
+
 \paragraph{Measuring faithfulness.}
-Type-checking, BLEU, and exact match are blind to meaning and correlate poorly with human judgment~\cite{wu2022autoformalization,azerbayev2023proofnet,poiroux2025reliable}. The alternatives can be sorted by what they trust. Human-labelled sets such as ProofNetVerif~\cite{poiroux2025reliable}, ConsistencyCheck~\cite{chen2025reform}, CriticLeanBench~\cite{criticlean2025}, and MA-Align~\cite{mathatlas2026} allow metrics to be meta-evaluated, but they are expensive to build, and the references they rest on are themselves unreliable: annotation found 16.4\% of the human-written formal statements in miniF2F and 38.5\% of those in ProofNet to be semantically wrong~\cite{chen2025reform}. Model-based methods trust a language model as a judge~\cite{ying2024leanworkbook,lin2025goedel,kimina2025}, a trained critic~\cite{lu2025formalalign,criticlean2025,mathesis2025}, or a back-translator~\cite{patel2024newsymbol,li2024symbolic}; the best judges agree with experts about 86\% of the time~\cite{chen2025reform}, and in specification autoformalization a judge missed a quarter of the failures that an executable check caught~\cite{verusspecgym2026}. Prover-based methods trust an automated prover to establish equivalence with a reference~\cite{liu2025rethinking,poiroux2025reliable,murphy2024leaneuclid,liu2025gted}, and so need both a reference and a proof search that may time out. Every method above needs a human, a model, or an incomplete prover somewhere in the loop. We reverse the direction of translation so that it is available by construction. The price is a narrower criterion, feasible only because the target language is small.
+Human-labelled sets such as ProofNetVerif~\citep{poiroux2025reliable}, ConsistencyCheck~\citep{chen2025reform}, CriticLeanBench~\citep{criticlean2025}, and MA-Align~\citep{mathatlas2026} are expensive to build, and the references they rest on are themselves unreliable: annotation found 16.4\% of the human-written formal statements in miniF2F and 38.5\% of those in ProofNet to be semantically wrong~\citep{chen2025reform}. Model-based methods trust a language model as a judge~\citep{ying2024leanworkbook,lin2025goedel,kimina2025}, a trained critic~\citep{lu2025formalalign,criticlean2025,mathesis2025}, or a back-translator~\citep{patel2024newsymbol,li2024symbolic}; the best judges agree with experts about 86\% of the time~\citep{chen2025reform}, and in specification autoformalization a judge missed a quarter of the failures that an executable check caught~\citep{verusspecgym2026}. Prover-based methods trust an automated prover to establish equivalence with a reference~\citep{liu2025rethinking,poiroux2025reliable,murphy2024leaneuclid,liu2025gted}, and so need both a reference and a proof search that may time out. Every method above needs a human, a model, or an incomplete prover somewhere in the loop. 
  
 \paragraph{Synthetic language with exact ground truth.}
 Synthetic and semi-synthetic reasoning benchmarks construct
 natural-language problems from controlled underlying
 structures~\citep{weston2015babi,sinha2019clutrr,clark2020ruletaker,tafjord2021proofwriter}.
 ZebraLogic uses clue templates~\citep{zebralogic2025},
-whereas SATBench uses LLMs to render SAT formulas as
-narratives~\citep{satbench2025}. FOLIO combines expert-written
+whereas SATBench uses LLMs (not deterministic) and tests solving, not translation~\citep{satbench2025}. FOLIO combines expert-written
 and template-assisted stories and also evaluates
 natural-language-to-first-order-logic translation~\citep{han2022folio}.
-Newer formal projects have been used to reduce contamination
-risk in autoformalization evaluation~\citep{poiroux2025reliable}.
-We use deterministic renderers to produce paired story and
-literal descriptions, then score how accurately models recover
-the source statements under the accepted symmetries. Models
-are not asked to determine whether the implications hold.
  
 \paragraph{Staged formalization.}
 Passing through an intermediate representation on the way to a formal target is an old idea in semantic parsing, whether a canonical utterance~\cite{shin2021constrained} or an intermediate query language~\cite{guo2019irnet,gan2021natsql}. Prompting methods that first abstract a problem~\cite{zheng2023stepback} or draft an informal sketch~\cite{jiang2023dsp} follow the same pattern, and formalize-then-solve pipelines identify translation as a major source of error~\cite{olausson2023linc,pan2023logiclm,ye2023satlm,lyu2023faithfulcot}, motivating decomposition of the translation step~\cite{ryu2024divide}. The remedies proposed for autoformalization add a verifier or a feedback loop: reflective refinement~\cite{chen2025reform}, faithfulness-guided decoding~\cite{mohammad2026faithfulness}, or reranking candidates by symbolic equivalence~\cite{li2024symbolic}. Our two-stage route uses neither. It changes only how the model is asked, and it composes with any of them.
 
 
-\section{Benchmark \shivam{Give it a flashy name}}
-
-\shivam{we dont need to give justification for why we are making a benchmark inside the benchmark section, AI really likes doing that for some reason...? We should just start with the main point, and into describing the dataset creation} Faithfulness is hard to grade because grading requires already knowing what
-the informal text meant. The benchmark obtains that knowledge by
-construction: instead of collecting informal mathematics and debating what
-its formalization should have been, it starts from the formal statement and
-\textit{manufactures} the informal text, with a renderer whose output
-provably determines the statement it came from. Grading a model's answer
-then reduces to comparing two formal objects, which is mechanical. Every
-benchmark item is produced and scored in four steps.
+\section{Constructing the Benchmark} 
+Each benchmark item begins with an ordered pair $(E,F)$ of equational laws
+from ETP, representing the claim that every binary operation satisfying $E$
+also satisfies $F$. The benchmark asks a model to recover this formal claim
+from one of its natural-language renderings. Figure~\ref{fig:pipeline} summarizes the following four
+steps:
 
 \begin{enumerate}
-    \item \textbf{Sample a statement.} An item is an ordered pair $(E, F)$
-    of equational laws, read as the claim ``every structure satisfying $E$
-    also satisfies $F$.''
-    \item \textbf{Informalize.} A deterministic renderer turns the pair into
-    a short themed story: a workplace whose custom always upholds $E$,
-    ending with the open question of whether a second regularity, $F$, must
-    also hold. The story contains no notation, no variable letters, and no
-    mathematical vocabulary.
-    \item \textbf{Formalize.} The model is shown only the story, together
-    with a self-contained prompt that defines a minimal formal notation, and
-    is asked to state the assumed law and the questioned law in that
-    notation.
-    \item \textbf{Grade.} A parser reads the model's answer, canonicalizes
-    it, and compares it with the source pair modulo an enumerated group of
-    symmetries. The verdict is \textit{correct}, \textit{wrong} (well-formed
-    but denoting a different statement), or \textit{unparseable}.
+    \item \textbf{Sample and construct the reference.}
+    We sample an ordered pair $(E,F)$ of ETP laws and retain its formal syntax
+    trees as the ground-truth statement. The pair is serialized into the
+    benchmark-specific Rigid Grammar, and the permitted symmetry
+    transformations are enumerated to construct the set of acceptable answers.
+
+    \item \textbf{Render the statement.}
+    Deterministic renderers express the same pair in two matched forms:
+    \textit{Story} and
+    \textit{Literal-NL}. The model is never shown the
+    original ETP equations.
+
+    \item \textbf{Translate into Rigid Grammar.}
+    The model receives one natural-language rendering, a self-contained
+    definition of the target syntax, and a small set of worked examples. 
+    \item \textbf{Parse and grade the translation.}
+    The grader extracts and parses
+    the model response and classifies it as \textit{correct} if it
+    matches an accepted variant, \textit{wrong} if it is parseable but
+    represents a different statement, and \textit{unparseable} if extraction
+    or parsing fails.
 \end{enumerate}
-No human and no language model appears anywhere on the reference side.
-Rendering and grading are pure functions: the same pair always produces the
-byte-identical story, the same response always receives the same verdict,
-and every score is exactly re-derivable from the model's raw output.
-
-
-
 
 \begin{figure}[t]
   \centering
-  \includegraphics[width=\linewidth]{benchmark-figure.png}
-  \caption{\textbf{Benchmark pipeline.} \emph{Left:} We start from ETP
-    equations and use a deterministic renderer to produce three surface forms:
-    Story (multiple themes via templates), Literal-NL, and our made-up Rigid
-    Grammar (used as the label to avoid training data leakage). We additionally
-    generate a symmetry group combinatorially to enumerate all acceptable
-    answer variants. \emph{Right:} We prompt the model to translate a Story or
-    Literal-NL input into Rigid Grammar, providing few-shot examples and the
-    syntax rules. Grading proceeds by (1) extracting the last ASSUME/ASK lines
-    via regex, (2) parsing into a term-tree with a recursive-descent parser,
-    (3) canonicalizing variables by first appearance, and (4) comparing against
-    the symmetry group. Predictions are marked correct, incorrect, or
-    unparseable.}
+  \includegraphics[width=\linewidth]{main-figure.jpg}
+    \caption{\textbf{Benchmark pipeline.} Starting from an ETP implication, deterministic renderers produce matched Story and Literal-NL inputs. A model translates one input into Rigid Grammar, and a deterministic grader compares the parsed response with the retained formal source.}
   \label{fig:pipeline}
 \end{figure}
 
 \subsection{Substrate: implications between equational laws}
 A \textit{magma} is a set equipped with a single binary operation
-$\diamond$ and no axioms at all. A \textit{law} is a universally quantified
+$\diamond$. A \textit{law} is a universally quantified
 identity between terms of that operation, such as
-$x \diamond y = (y \diamond y) \diamond x$; since nothing (not even
-associativity) is assumed, terms are fully parenthesized and the shape of
-the nesting is part of the meaning. The Equational Theories Project
+$x \diamond y = (y \diamond y) \diamond x$;  The Equational Theories Project
 catalogued the 4{,}694 laws with at most four applications of the operation
 and resolved all 22{,}028{,}942 ordered implications between them, with the
 complete graph verified in Lean [cite]. However, our benchmark is not concerned with the truth value of the implications. 
@@ -284,11 +248,10 @@ Three properties make this an unusually clean substrate for measuring
 translation. First, equality of meaning is decidable: whether two answers
 in this fragment state the same law is a small computation
 (Section~\ref{sec:grading}), whereas for mathematics at large that question
-can be as hard as the mathematics itself. This is what lets the benchmark
-dispense with judges. Second, difficulty is controllable, with two
-structural dials: the number of operation applications and the maximum
+can be as hard as the math itself. This is what lets the benchmark
+dispense with judges. Second, difficulty is controllable and scales with the number of operation applications and the maximum
 nesting depth. Third, the laws are uniform and obscure: beyond a handful
-with established names (commutativity, idempotence), they are nameless and
+with established names (commutativity, associativity), they are nameless and
 essentially absent from natural-language text, so a model cannot retrieve a
 memorized formalization, it must read the story in front of it.
 The two zero-operation laws ($x = x$ and
@@ -316,14 +279,7 @@ identical across them. Every
 action phrasing is order-sensitive by design (``pours crimson \textit{into}
 ochre''); symmetric wordings such as ``mix'' are banned, because they would
 silently assert a commutativity the law may not have.
- \textit{Injectivity}: a back-parser recovers
-both term trees, the ingredient-to-variable correspondence, and every
-argument order from the story text alone. Injectivity is what makes the task well-posed:
-rendering loses no information needed to recover the statement, so a wrong
-answer is attributable to the model, not to ambiguity in the text.
-We use a template renderer rather than a language model deliberately.
-Informalizing with a model would inject, at generation time, exactly the
-infidelity the benchmark is meant to measure.
+ 
 \subsection{The formalization task}
 The prompt shown with each story is self-contained and defines the entire
 target language on the page: an expression is an ingredient name or
@@ -364,12 +320,10 @@ not recoverable intent. And the story cannot say which participant of
 ``pours crimson into ochre'' is the operation's \textit{first} argument; an
 answer that adopts the opposite convention uniformly states the dual law
 --- the same claim with every application mirrored. However, any
-structural difference --- one transposed pair of arguments, one invented or
-omitted application --- makes the answer \textit{wrong}.
+structural difference makes the answer \textit{wrong}.
 \textit{Wrong} is the verdict of interest: a well-formed answer denoting a
-different statement is semantic drift, observed directly rather than
-estimated by a judge. Keeping \textit{unparseable} separate matters because
-the failures differ in kind --- a model that cannot hold the output format
+different statement is semantic drift. Keeping \textit{unparseable} separate matters because
+the failures differ in kind: a model that does not understand the output format
 is not the same as a model that writes fluent formal syntax meaning the
 wrong thing.
 \begin{figure}[t]
@@ -400,28 +354,24 @@ color?}
 \hrule
 \medskip
 A correct answer, in the notation defined by the prompt:
-\smallskip
+\\
 \texttt{ASSUME: op(crimson, ochre) = op(op(ochre, ochre), crimson)}\\
 \texttt{ASK: op(crimson, ochre) = op(ochre, crimson)}
 \end{minipage}}
 \caption{One benchmark item. The renderer maps the implication
 $x \diamond y = (y \diamond y) \diamond x \;\Rightarrow\;
 x \diamond y = y \diamond x$ (ETP equations 387 and 43) to this story under
-the \textit{paint} theme; the model sees only the story. The answer shown
-takes the poured pigment as \texttt{op}'s first argument; grading treats
-variable names as arbitrary and accepts the uniformly mirrored convention
-as the dual reading.}
+the \textit{paint} theme.}
 \label{fig:benchmark-item}
 \end{figure}
-\subsection{A second rendering: the literal arm}
+\subsection{A second rendering: Literal-NL}
 Every pair can also be rendered by a second deterministic renderer that
-skips the disguise. The \textit{literal} arm produces a direct description
+omits the narrative flourish. The \textit{Literal-NL} arm produces a direct description
 that openly speaks of an operation with a first and a second input and uses
 letters for the objects, with the same one-step-per-application discipline:
 ``apply the operation to $x$ as its first input and $y$ as its second
 input, and call the result Value 1; then \dots''. The description is
-question-framed like the story, injective like the story (it has its own
-back-parser), and graded by the same grader.\footnote{On the literal arm
+question-framed like the story and graded by the same grader.\footnote{On the literal arm
 the text does fix which input is first, so a dualized answer is not a
 faithful reading of \textit{this} text; the grader accepts and records it
 anyway so that both arms are scored identically. Dualized answers are rare
@@ -429,11 +379,11 @@ in practice.}
 The literal arm is the benchmark's built-in control. Sampling never
 consults the rendering, so a story run and a literal run with the same seed
 evaluate the identical pairs, and the gap between them isolates the cost of
-the narrative indirection --- statement distribution, output notation, and
-grading are all held fixed. The literal description is also, by
+the narrative indirection. The literal description is also, by
 construction, what a perfect abstraction of the story would produce, which
 is why it serves as the approximate ceiling for the two-stage protocol
-studied in Section~\ref{sec:experiments}.
+studied in Section~\ref{sec:results}.
+
 \subsection{Difficulty, sampling, and scale}
 Two structural dials set item difficulty: the total number of operation
 applications in the pair (two to eight, once the zero-operation laws are
@@ -449,88 +399,126 @@ synthetic generator can produce laws beyond the four-application cap in the
 same format when a longer difficulty axis is needed. This bears directly on
 contamination. The stories are novel text that exists nowhere outside the
 benchmark; the mapping from story to statement appears in no training
-corpus; memorizing the source project's published truth values does not
-help, since the score rewards stating the claim, not settling it; and a
-compromised sample can simply be redrawn. The marginal cost of an item is
-one model call --- rendering and grading are free.
-
+corpus. The marginal cost of an item is one model call, rendering and grading are free.
 
 \section{Results}
-\denis{todo: fix the blank spaces}
-
 \label{sec:results}
-We evaluate a panel of contemporary language models spanning open and
-proprietary systems and a range of sizes. Every run uses the seeded
-stratified sampler, so the story, literal, and two-stage arms are scored on
-the identical set of pairs and any difference between them is attributable to
-the presentation alone; vacuous laws are excluded throughout, and every
-number reported is the deterministic grader's verdict on the model's raw
-output. We report the fraction of items judged \textit{correct}; the
-remaining mass divides between \textit{wrong} (a well-formed answer that
-denotes a different statement, i.e.\ semantic drift) and \textit{unparseable}.
-
 \subsection{Abstraction helps improve translation accuracy}
-Presenting a statement as a story rather than as a plain description makes it
-substantially harder to formalize faithfully. Averaged over nine models on a
-fixed set of 160 pairs, the correct statement is recovered from the story
-$50\%$ of the time but from the literal description $67\%$ of the time
-(Figure~\ref{fig:arms}). Because the two arms are rendered from the same pairs
-and graded identically, this $17$-point gap isolates the cost of the narrative
-indirection itself. The penalty holds for eight of the nine models---the lone
-exception formalizes both presentations about equally well---and it widens as
-models weaken, reaching roughly $20$ to $30$ points for the mid-sized open
-models, while the strongest model in the panel stays high on both arms.
+Rendering ETP mathematical statements as  stories rather than literal descriptions introduces a significant loss in auto-formalization faithfulness. Across nine models tested on a fixed 160-pair set, models correctly recovered statements from stories only $50\%$ of the time, compared to $67\%$ for literal descriptions (Figure~\ref{fig:surface-form}). Both start from identical pairs and undergo identical grading, attributing this disparity to the statement surface form. Notably, we see a bigger gap in the mid-sized open models, between $20$--$30$ points, as opposed to more capable models, where they are more resilient across formats.
 
-The gap all but disappears when the model is asked to abstract before it
-formalizes. In the two-stage protocol the model first rewrites the story into
-a plain, notation-free restatement of its logical content, and only then
-translates that restatement into the target notation. This single
-intermediate step recovers a median of $99\%$ of the story-to-literal gap
-across the models for which the gap exists, raising pooled story accuracy to
-$66\%$, level with the literal arm. Since the literal description is by
-construction what a flawless abstraction of the story would yield, the result
-localizes the difficulty of the story arm: it lies in seeing through the
-narrative to the underlying claim, not in producing the formal notation.
+Under the two-stage protocol, we prompt the model to abstract the problem before formalizing, where it first strips away the narrative to produce a notation-free logical summary, and then translate into the target syntax. This intermediate step recovers a median of $99\%$ of the story-to-literal performance drop, boosting the pooled story accuracy to $66\%$, effectively matching the literal baseline. This suggests the failure mode that models struggle to identify the core logical claim in a decorated narrative, but are able to translate more faithfully once the claim is isolated.
 
-\begin{figure}[H]
+
+\begin{figure}[t]
 \centering
-\includegraphics[width=0.85\columnwidth]{f2_arms_by_model.png}
-\caption{Faithfulness by presentation, per model (nine models, 160
-stratified pairs, no reasoning, vacuous laws excluded). The story arm trails
-the literal arm for nearly every model; the two-stage arm, which inserts one
-abstraction step before formalizing, tracks the literal ceiling.}
-\label{fig:arms}
+\includegraphics[width=0.85\columnwidth, height=0.38\textheight, keepaspectratio]{f2_arms_by_model-newer.jpg}
+\caption{ Faithfulness by surface form, per model (nine models, 160
+stratified pairs, no reasoning, vacuous laws excluded). 
+ Story accuracy trails
+literal accuracy for nearly every model; the two-stage protocol, which inserts one
+abstraction step before formalizing, tracks the literal ceiling. The bottom
+panel pools all models and pairs ($n = 945$ per surface form); error bars
+are Wilson 95\% intervals.}
+\label{fig:surface-form}
 \end{figure}
 
-\subsection{Reasoning significantly improves translation accuracy for all three arms (story, literal, two-stage)}
-The narrative penalty is a function of how much the model is permitted to
-think. Enabling reasoning lifts all three arms to near-ceiling accuracy and
-collapses the differences between them: on a matched set of pairs across eight
-models, story accuracy rises from $40\%$ to $97\%$, literal from $62\%$ to
-$99\%$, and two-stage from $59\%$ to $96\%$ (Figure~\ref{fig:reasoning}). The
-advantage that the two-stage route confers without reasoning is thus subsumed
-once the model can carry out the same abstraction internally over an extended
-deliberation; the presentations diverge sharply only when the model must
-answer immediately.
+\subsection{Reasoning significantly improves translation accuracy}
+When reasoning capabilities are enabled, translation accuracy improves substantially across all three surface forms to near-ceiling levels. Notably, the narrative penalty plays a much smaller role when there is more compute, as we see that most of the models still reach near perfect translation accuracy from story surface form. Evaluating a matched set of pairs across eight models, story accuracy surges from $40\%$ to $97\%$, literal accuracy from $62\%$ to $99\%$, and two-stage accuracy from $59\%$ to $96\%$ (Figure~\ref{fig:reasoning}). The explicit benefits of the two-stage pipeline are subsumed when a model is allowed to perform that abstraction internally via extended deliberation.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=\columnwidth]{r2_bars_by_model.png}
-\caption{Faithfulness with reasoning disabled (light) versus enabled (dark),
-per model and arm. Reasoning raises every arm close to the ceiling and
-largely removes the story penalty visible in Figure~\ref{fig:arms}.}
+\includegraphics[width=\columnwidth, height=0.32\textheight, keepaspectratio]{r2_bars_by_model-newer.jpg}
+% \caption{\shivam{You'd want to be consistent in the color scheme, throughout. Also if this barplot is vertical, then figure 1 should also be vertical. I would suggest taking the bare plot (no labels and or legend) and use figma to size and place them better} \denis{done} Faithfulness with reasoning disabled (light) versus enabled (dark),
+per model and surface form. Reasoning raises every surface form close to the ceiling and
+largely removes the story penalty visible in Figure~\ref{fig:surface-form}.}
 \label{fig:reasoning}
 \end{figure}
 
-\subsection{Reasoning models spend more thinking tokens on story translations than on matched literal ones}
-If reasoning equalizes accuracy across presentations, the residual cost of the
-narrative surfaces instead as reasoning effort. On matched pairs with
-reasoning enabled, every model in the reasoning-capable panel expends more
-thinking on the story than on the equivalent literal description---by a median
-factor of $1.4$, and up to $1.5$ for the strongest reasoners
-(Table~\ref{tab:tokens}). The narrative, then, does not render the statement
-unrecoverable so much as more expensive to recover: the model spends the
-difference in deliberation and arrives at the same answer.
+Closing the gap is not free. Every reasoning-capable model spends more thinking tokens on a story than on the matched literal description of the same statement: between $1.1\times$ and $1.5\times$ as many at the median, with the strongest reasoners at the high end of that range (Appendix~\ref{app:tokens}, Table~\ref{tab:tokens}). \shivam{what is a token multiplier? If the point is to that that the models use 1.4-1.5x tokens, then just say that} \denis{done} The model has to spend additional inference-time compute to extract the formal structure from the unstructured narrative before it can translate it. \shivam{Again, too jargony text. You'd want to write some the model need to spend significant inference-time compute to extract the formal structure from the noisy, unstructured natural language.} \denis{done} \shivam{This result also looks trivial, one would expect more token usage for the reasoning model, and more complex task, it should be moved to appendix in favor ouf other results.} \denis{done}
+
+\subsection{Reasoning tokens scale with translation task complexity}
+
+To test how faithfulness holds up on harder statements, we extended our difficulty axis beyond the Equational Theories Project (ETP) limit of four operations, generating synthetic laws with up to ten operations per equation. Without reasoning, accuracy collapses as complexity grows, dropping from $82\%$ at one operation per equation to $0\%$ at ten on the story form. With reasoning enabled, the same five models degrade gracefully and still recover $75\%$ to $81\%$ of statements at the hardest tier (Figure~\ref{fig:cliff}). Their reasoning effort scales with the task: median thinking tokens rise monotonically with operation count, and stories cost more than literal descriptions at every level, with the gap widening as statements get harder (Appendix~\ref{app:tokens}, Figure~\ref{fig:tokens-complexity}). Taken together, the steep cliff seen without reasoning is consistent with a deliberation-budget constraint rather than a representational limit: given room to think, models allocate more compute to harder statements and maintain semantic faithfulness.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\columnwidth]{accuracy_on_vs_off-new.jpg}
+\caption{Faithfulness against complexity with reasoning disabled versus
+enabled. Without reasoning, accuracy cliffs toward zero as complexity grows;
+with reasoning, both surface forms degrade gracefully, indicating that the cliff is
+chiefly a matter of deliberation budget rather than a representational limit.}
+\label{fig:cliff}
+\end{figure}
+
+\section{Limitations}
+Our benchmark deliberately studies a restricted form of autoformalization.
+The natural-language inputs are generated from formal statements using fixed,
+information-preserving templates. This construction provides exact ground
+truth, but it reverses the direction in which real autoformalization datasets
+are usually created and avoids much of the ambiguity found in human-written
+mathematics. The four Story themes also share a common underlying structure,
+so they capture narrative variation rather than the full linguistic diversity
+of natural language.
+
+The target rigid grammar represents equations over a single binary operation.
+Its simplicity helps reduce target-language confounds, but it does not include
+the types, notation, library dependencies, or elaboration behavior of practical
+formal systems such as Lean. Our results therefore measure whether models
+recover a controlled logical structure, not whether they can formalize
+general mathematical statements or construct proofs. Deterministic grading is
+exact only relative to the benchmark's representation and accepted
+symmetries.
+
+Finally, the strongest models approach ceiling performance under reasoning,
+which limits the benchmark's ability to distinguish among frontier systems at
+the current difficulty levels. Extending the structural complexity and
+linguistic variation may reduce this saturation, but doing so while preserving
+deterministic and unambiguous grading remains an important design challenge.
+
+
+\section{Conclusion}
+We introduced a controlled benchmark for studying semantic preservation in
+natural-language-to-formal translation. Starting from ETP implications, we
+generate matched Story and Literal-NL descriptions and ask models to recover
+the same statement in a minimal rigid grammar. Because the original formal
+statement is retained, model outputs can be graded deterministically without
+a human or language-model judge.
+
+Our paired evaluation shows that narrative presentation makes formalization
+more difficult than a direct natural-language description of the same logical
+structure. When reasoning is disabled, an explicit two-stage procedure recovers
+most of this gap. When reasoning is enabled, all three conditions approach
+ceiling performance, suggesting that additional inference-time computation
+can allow capable models to perform the abstraction internally.
+
+These results show that source interpretation and target encoding should be
+treated as distinct components of autoformalization. The present benchmark
+provides a controlled environment for studying their interaction rather than
+a general solution to semantic faithfulness. A natural next step is to extend
+this framework toward less templated language and richer target formalisms,
+while retaining a reliable reference against which semantic drift can be
+measured.
+
+% \section*{References}
+
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\appendix
+
+\section{Reasoning-token costs}
+\label{app:tokens}
+
+Table~\ref{tab:tokens} reports median reasoning tokens per item for the five
+reasoning-capable models on the matched pairs of Section~\ref{sec:results},
+with reasoning enabled. Every model spends more on the story than on the
+literal description of the same statement. Figure~\ref{fig:tokens-complexity}
+shows the same quantity against statement complexity on the synthetic laws of
+one to ten operations per equation.
 
 \begin{table}[H]
 \centering
@@ -551,74 +539,18 @@ gpt-5-mini & 1248 & 832 & 1.50 \\
 \end{tabular}
 \end{table}
 
-\subsection{Reasoning models spend more thinking tokens on more complex problems}
-The deliberation a model invests scales with the structural complexity of the
-statement it must formalize. Extending the difficulty axis beyond the
-four-operation ETP cap with synthetically generated laws of up to ten
-operations per equation, and letting five reasoning-capable models think
-freely, we find that the median reasoning effort per item rises monotonically
-with the number of operations---from roughly $1{,}270$ to $3{,}250$ tokens on
-the story arm and $770$ to $2{,}090$ on the literal arm
-(Figure~\ref{fig:tokens-complexity}). The story arm again costs more than the
-matched literal one at every complexity level, and the gap between them widens
-as statements grow. Over the narrow ETP range alone this trend is flat and
-therefore invisible, which is why isolating it required the extended axis.
-
-This deliberation is what sustains faithfulness as problems grow. Without
-reasoning, accuracy collapses toward zero as complexity increases---story
-accuracy falls from $82\%$ at one operation per equation to $0\%$ at ten---
-whereas with free reasoning the same models degrade gracefully, still holding
-$75$ to $81\%$ at the hardest tier (Figure~\ref{fig:cliff}). The
-complexity cliff observed without reasoning is thus largely a budget effect:
-given room to think, models pay proportionally more deliberation on harder
-statements and remain faithful.
+\denis{need to fix Figure 5, consider only keeping the 2 main lines}
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.7\columnwidth]{tokens_vs_complexity.png}
+\includegraphics[width=0.7\columnwidth]{tokens_vs_complexity-new.jpg}
 \caption{Median reasoning tokens per item against statement complexity (five
 reasoning-capable models, synthetic laws of one to ten operations per
-equation, reasoning enabled). Effort rises monotonically with complexity, and
-the story arm costs more than the matched literal one throughout.}
+equation, reasoning enabled). Bold lines are pooled medians, faint lines are
+individual models. Effort rises monotonically with complexity, and stories
+cost more than the matched literal descriptions throughout.}
 \label{fig:tokens-complexity}
 \end{figure}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=\columnwidth]{accuracy_on_vs_off.png}
-\caption{Faithfulness against complexity with reasoning disabled versus
-enabled. Without reasoning, accuracy cliffs toward zero as complexity grows;
-with reasoning, both arms degrade gracefully, indicating that the cliff is
-chiefly a matter of deliberation budget rather than a representational limit.}
-\label{fig:cliff}
-\end{figure}
-
-\section{Limitations}
-
-
-\section{Conclusion}
-
-\shivam{1 para summary of the paper }
-
-\shivam{1 para for future work}
-
-\shivam{A couple concluding lines}
-
-\section*{References}
-
-
-\bibliographystyle{plainnat}
-\bibliography{references}
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\appendix
-
-\section{Technical appendices and supplementary material}
-Technical appendices with additional results, figures, graphs, and proofs may be submitted with the paper submission before the full submission deadline (see above). You can upload a ZIP file for videos or code, but do not upload a separate PDF file for the appendix. There is no page limit for the technical appendices. 
-
-Note: Think of the appendix as ``optional reading'' for reviewers. The paper must be able to stand alone without the appendix; for example, adding critical experiments that support the main claims to an appendix is inappropriate. 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
