@@ -95,7 +95,6 @@
 
 \begin{document}
 
-632960
 \maketitle
 
 
@@ -131,10 +130,10 @@ formalize the resulting abstraction. Together, these conditions let us ask
 how source presentation, explicit decomposition, reasoning, and structural
 complexity affect semantic preservation.
 
-Across nine models evaluated without reasoning on the same 160 ETP pairs,
+Across nine models evaluated without reasoning on the same 105 ETP pairs,
 translating from Story achieves 50\% accuracy, compared with 67\% for
 Literal-NL. The two-stage pipeline reaches 66\%, recovering most of the gap
-between the two source forms. With reasoning enabled, performance rises to
+between the two source forms. On a smaller matched sample of 24 pairs and eight models, with reasoning enabled, performance rises to
 97\% for Story, 99\% for Literal-NL, and 96\% for the two-stage protocol.
 These results indicate that narrative abstraction creates a measurable
 translation cost, but that explicit decomposition or additional
@@ -408,28 +407,30 @@ corpus. The marginal cost of an item is one model call, rendering and grading ar
 \section{Results}
 \label{sec:results}
 \subsection{Abstraction helps improve translation accuracy}
-Rendering ETP mathematical statements as  stories rather than literal descriptions introduces a significant loss in auto-formalization faithfulness. Across nine models tested on a fixed 160-pair set, models correctly recovered statements from stories only $50\%$ of the time, compared to $67\%$ for literal descriptions (Figure~\ref{fig:surface-form}). Both start from identical pairs and undergo identical grading, attributing this disparity to the statement surface form. Notably, we see a bigger gap in the mid-sized open models, between $20$--$30$ points, as opposed to more capable models, where they are more resilient across formats.
+Rendering ETP mathematical statements as  stories rather than literal descriptions introduces a significant loss in auto-formalization faithfulness. We sampled 160 stratified pairs and dropped the 55 that contain a zero-operation law, leaving 105. On these 105 pairs, nine models correctly recovered statements from stories only $50\%$ of the time, compared to $67\%$ for literal descriptions (Figure~\ref{fig:surface-form}). Both start from identical pairs and undergo identical grading, attributing this disparity to the statement surface form. Notably, we see a bigger gap in the mid-sized open models, between $20$--$30$ points, as opposed to more capable models, where they are more resilient across formats.
 
-Under the two-stage protocol, we prompt the model to abstract the problem before formalizing, where it first strips away the narrative to produce a notation-free logical summary, and then translate into the target syntax. This intermediate step recovers a median of $99\%$ of the story-to-literal performance drop, boosting the pooled story accuracy to $66\%$, effectively matching the literal baseline. This suggests the failure mode that models struggle to identify the core logical claim in a decorated narrative, but are able to translate more faithfully once the claim is isolated.
+Under the two-stage protocol, we prompt the model to abstract the problem before formalizing, where it first strips away the narrative to produce a notation-free logical summary, and then translate into the target syntax. This intermediate step recovers a per-model median of $99\%$ of the story-to-literal performance drop, boosting the pooled story accuracy to $66\%$, effectively matching the literal baseline. This suggests the failure mode that models struggle to identify the core logical claim in a decorated narrative, but are able to translate more faithfully once the claim is isolated.
 
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.85\columnwidth, height=0.43\textheight, keepaspectratio]{f2_arms_by_model-newer.jpg}
-\caption{Faithfulness by surface form, per model (nine models, 160
-stratified pairs, no reasoning, vacuous laws excluded). 
+\includegraphics[width=0.85\columnwidth, height=0.40\textheight, keepaspectratio]{f2_arms_by_model-newer.jpg}
+\caption{Faithfulness by surface form, per model (nine models, 105
+stratified pairs after dropping the 55 of 160 that contain a zero-operation
+law, no reasoning). 
  Story accuracy trails
 literal accuracy for nearly every model; the two-stage protocol, which inserts one
 abstraction step before formalizing, tracks the literal ceiling. The bottom
-panel pools all models and pairs ($n = 945$ per surface form); error bars
+panel pools all models and pairs ($n = 9 \times 105 = 945$ per surface form); error bars
 are Wilson 95\% intervals.}
 \label{fig:surface-form}
 \end{figure}
 
 \subsection{Reasoning significantly improves translation accuracy}
-When reasoning capabilities are enabled, translation accuracy improves substantially across all three surface forms to near-ceiling levels. Notably, the narrative penalty plays a much smaller role when there is more compute, as we see that most of the models still reach near perfect translation accuracy from story surface form. Evaluating a matched set of pairs across eight models, story accuracy surges from $40\%$ to $97\%$, literal accuracy from $62\%$ to $99\%$, and two-stage accuracy from $59\%$ to $96\%$ (Figure~\ref{fig:reasoning}). The explicit benefits of the two-stage pipeline are subsumed when a model is allowed to perform that abstraction internally via extended deliberation.
+\label{sec:reasoning}
+For this comparison we drew a separate, smaller sample of 24 pairs (40 sampled, minus those with a zero-operation law) and ran eight models on it twice, once with reasoning off and once with reasoning on. When reasoning capabilities are enabled, translation accuracy improves substantially across all three surface forms to near-ceiling levels. Notably, the narrative penalty plays a much smaller role when there is more compute, as we see that most of the models still reach near perfect translation accuracy from story surface form. Pooled over the eight models, story accuracy surges from $40\%$ to $97\%$, literal accuracy from $62\%$ to $99\%$, and two-stage accuracy from $59\%$ to $96\%$ (Figure~\ref{fig:reasoning}). The explicit benefits of the two-stage pipeline are subsumed when a model is allowed to perform that abstraction internally via extended deliberation.
 
-\begin{figure}[H]
+\begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth, height=0.32\textheight, keepaspectratio]{r2_bars_by_model-newer.jpg}
 \caption{ Faithfulness with reasoning disabled (light) versus enabled (dark),
@@ -438,14 +439,44 @@ largely removes the story penalty visible in Figure~\ref{fig:surface-form}.}
 \label{fig:reasoning}
 \end{figure}
 
-Every reasoning-capable model spends more thinking tokens on a story than on the matched literal description of the same statement: between $1.1\times$ and $1.5\times$ as many at the median, with the strongest reasoners at the high end of that range (Appendix~\ref{app:tokens}, Table~\ref{tab:tokens}). The model has to spend additional inference-time compute to extract the formal structure from the unstructured narrative before it can translate it. 
-% \shivam{This result also looks trivial, one would expect more token usage for the reasoning model, and more complex task, it should be moved to appendix in favor ouf other results.} \denis{done}
+Each of the five models with a native reasoning mode spends more reasoning tokens on a story than on the matched literal-NL of the same statement, between $1.1\times$ and $1.5\times$ as many at the median, with the strongest reasoners at the high end of that range (Section~\ref{sec:tokens}, Table~\ref{tab:tokens}). The model has to spend additional inference-time compute to extract the formal structure from the unstructured narrative before it can translate it. 
 
-\subsection{Reasoning tokens scale with translation task complexity}
+\subsection{Reasoning-token costs}
+\label{sec:tokens}
 
-To test how faithfulness holds up on harder statements, we extended our difficulty axis beyond the Equational Theories Project (ETP) limit of four operations, generating synthetic laws with up to ten operations per equation. Without reasoning, accuracy collapses as complexity grows, dropping from $82\%$ at one operation per equation to $0\%$ at ten on the story form. With reasoning enabled, the same five models degrade gracefully and still recover $75\%$ to $81\%$ of statements at the hardest tier (Figure~\ref{fig:cliff}). Their reasoning effort scales with the task: median thinking tokens rise monotonically with operation count, and stories cost more than literal descriptions at every level, with the gap widening as statements get harder (Appendix~\ref{app:tokens}, Figure~\ref{fig:tokens-complexity}). Taken together, the steep cliff seen without reasoning is consistent with a deliberation-budget constraint rather than a representational limit: given room to think, models allocate more compute to harder statements and maintain semantic faithfulness.
+Table~\ref{tab:tokens} reports median reasoning tokens per item for the five
+reasoning-capable models on the 24 matched pairs of Section~\ref{sec:reasoning},
+with reasoning enabled. Every model spends more on the story than on the
+literal description of the same statement. Section~\ref{sec:complexity}
+extends this comparison to harder statements.
 
-\begin{figure}[H]
+\begin{table}[t]
+\centering
+\caption{Median reasoning tokens spent per item on matched pairs, with
+reasoning enabled (five reasoning-capable models). Each model consistently
+deliberates more on the story than on the equivalent literal description.}
+\label{tab:tokens}
+\begin{tabular}{lccc}
+\toprule
+model & story & literal & ratio \\
+\midrule
+deepseek-chat-v3.1 & 1030 & 925 & 1.11 \\
+claude-haiku-4.5 & 682 & 572 & 1.19 \\
+qwen3-32b & 1046 & 733 & 1.43 \\
+gemini-2.5-flash & 2116 & 1434 & 1.48 \\
+gpt-5-mini & 1248 & 832 & 1.50 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+
+\subsection{Reasoning removes the complexity cliff}
+\label{sec:complexity}
+
+To test how faithfulness holds up on harder statements, we extended our difficulty axis beyond the Equational Theories Project (ETP) limit of four operations, generating synthetic laws with up to ten operations per equation. This section uses the five models with a native reasoning mode, so accuracy and token spend come from the same runs. Without reasoning, accuracy collapses as complexity grows, dropping from $82\%$ at one operation per equation to $0\%$ at ten on the story form. With reasoning enabled, the same five models translate stories from one-operation equations with $100\%$ accuracy and degrade gracefully from there, still recovering $75\%$ of story statements and $81\%$ of literal statements at ten operations per equation (Figure~\ref{fig:cliff}). Their reasoning effort scales with the task: median thinking tokens rise monotonically with operation count, and stories cost more than literal descriptions at every level, with the gap widening as statements get harder (Figure~\ref{fig:tokens-complexity}). 
+
+\begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{accuracy_on_vs_off-new.jpg}
 \caption{Faithfulness against complexity with reasoning disabled versus
@@ -453,6 +484,17 @@ enabled. Without reasoning, accuracy cliffs toward zero as complexity grows;
 with reasoning, both surface forms degrade gracefully, indicating that the cliff is
 chiefly a matter of deliberation budget rather than a representational limit.}
 \label{fig:cliff}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.5\columnwidth]{tokens_vs_complexity-new.jpg}
+\caption{Median reasoning tokens per item against statement complexity (five
+reasoning-capable models, synthetic laws of one to ten operations per
+equation, reasoning enabled). Bold lines are pooled medians, faint lines are
+individual models. Effort rises monotonically with complexity, and stories
+cost more than the matched literal descriptions throughout.}
+\label{fig:tokens-complexity}
 \end{figure}
 
 \section{Limitations}
@@ -514,48 +556,6 @@ measured.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \appendix
-
-\section{Reasoning-token costs}
-\label{app:tokens}
-
-Table~\ref{tab:tokens} reports median reasoning tokens per item for the five
-reasoning-capable models on the matched pairs of Section~\ref{sec:results},
-with reasoning enabled. Every model spends more on the story than on the
-literal description of the same statement. Figure~\ref{fig:tokens-complexity}
-shows the same quantity against statement complexity on the synthetic laws of
-one to ten operations per equation.
-
-\begin{table}[H]
-\centering
-\caption{Median reasoning tokens spent per item on matched pairs, with
-reasoning enabled (five reasoning-capable models). Each model consistently
-deliberates more on the story than on the equivalent literal description.}
-\label{tab:tokens}
-\begin{tabular}{lccc}
-\toprule
-model & story & literal & ratio \\
-\midrule
-deepseek-chat-v3.1 & 1030 & 925 & 1.11 \\
-claude-haiku-4.5 & 682 & 572 & 1.19 \\
-qwen3-32b & 1046 & 733 & 1.43 \\
-gemini-2.5-flash & 2116 & 1434 & 1.48 \\
-gpt-5-mini & 1248 & 832 & 1.50 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-% \denis{need to fix Figure 5, consider only keeping the 2 main lines}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.7\columnwidth]{tokens_vs_complexity-new.jpg}
-\caption{Median reasoning tokens per item against statement complexity (five
-reasoning-capable models, synthetic laws of one to ten operations per
-equation, reasoning enabled). Bold lines are pooled medians, faint lines are
-individual models. Effort rises monotonically with complexity, and stories
-cost more than the matched literal descriptions throughout.}
-\label{fig:tokens-complexity}
-\end{figure}
 
 \section{Prompts}
 \subsection{Story Prompt}
