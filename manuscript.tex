@@ -115,8 +115,7 @@ Semantic drift can occur in several ways. A model tasked with autoformalizing ma
 encoding, or the faithfulness metric itself.
 
 Detecting semantic drift is difficult. Human evaluation is expensive, while language-model judges can accept incorrect formalizations or reject correct
-ones~\citep{kimina2025,chen2025reform}. Proof-based equivalence checks require a trusted reference formalization and may still depend on incomplete proof
-search. Proof-based equivalence checks require a trusted reference formalization and may still depend on incomplete proof search~\citep{liu2025rethinking,poiroux2025reliable,murphy2024leaneuclid}. As a result, existing evaluations often lack a scalable and deterministic way to determine whether the meaning of a source statement has been preserved.
+ones~\citep{kimina2025,chen2025reform}. Proof-based equivalence checks require a trusted reference formalization and may still depend on incomplete proof search~\citep{liu2025rethinking,poiroux2025reliable,murphy2024leaneuclid}. As a result, existing evaluations often lack a scalable and deterministic way to determine whether the meaning of a source statement has been preserved.
 
 
 
@@ -182,10 +181,10 @@ systems.
 %\oren{ I don't think Scalable Oversight should have a section in Related Works because our methods do not specifically target scalable oversight. I think the scalable oversight motivation should remain in the introduction}
 
 \paragraph{Informalization for data generation}
-The strongest current autoformalizers are language models fine-tuned on formal-informal pairs~\citep{gao2025herald,kimina2025,lin2025goedel}. Oftentimes, their training data is manufactured by having an LLM informalize an existing formal library.~\citep{jiang2023mma,gao2025herald}. We use informalization for the opposite purpose: performed by a deterministic renderer rather than a model, it yields an evaluation oracle instead of training data. This enables an exact ground truth formalization.  
+The strongest current autoformalizers are language models fine-tuned on formal-informal pairs~\citep{gao2025herald,kimina2025,lin2025goedel}. Oftentimes, their training data is manufactured by having an LLM informalize an existing formal library~\citep{jiang2023mma,gao2025herald}. We use informalization for the opposite purpose: performed by a deterministic renderer rather than a model, it yields an evaluation oracle instead of training data. This enables an exact ground truth formalization.  
 
 \paragraph{Measuring faithfulness.}
-Human-labelled sets such as ProofNetVerif~\citep{poiroux2025reliable}, ConsistencyCheck~\citep{chen2025reform}, CriticLeanBench~\citep{criticlean2025}, and MA-Align~\citep{mathatlas2026} are expensive to build, and the references they rest on are themselves unreliable: annotation found 16.4\% of the human-written formal statements in miniF2F and 38.5\% of those in ProofNet to be semantically wrong~\citep{chen2025reform}. Model-based methods trust a language model as a judge~\citep{ying2024leanworkbook,lin2025goedel,kimina2025,mathesis2025}, a trained critic~\citep{lu2025formalalign,criticlean2025}, or a back-translator~\citep{li2024symbolic}; the best judges agree with experts about 86\% of the time~\citep{chen2025reform}, and in specification autoformalization a judge missed a quarter of the failures that an executable check caught~\citep{verusspecgym2026}. Prover-based methods trust an automated prover to establish equivalence with a reference~\citep{liu2025rethinking,poiroux2025reliable,murphy2024leaneuclid}, and so need both a reference and a proof search that may time out. Every method above needs a human, a model, or an incomplete prover somewhere in the loop. 
+Human-labelled sets such as ProofNetVerif~\citep{poiroux2025reliable}, ConsistencyCheck~\citep{chen2025reform}, CriticLeanBench~\citep{criticlean2025}, and MA-Align~\citep{mathatlas2026} are expensive to build, and the references they rest on are themselves unreliable: annotation found 16.4\% of the human-written formal statements in miniF2F~\citep{zheng2022minif2f} and 38.5\% of those in ProofNet~\citep{azerbayev2023proofnet} to be semantically wrong~\citep{chen2025reform}. Model-based methods trust a language model as a judge~\citep{ying2024leanworkbook,lin2025goedel,kimina2025,mathesis2025}, a trained critic~\citep{lu2025formalalign,criticlean2025}, or a back-translator~\citep{li2024symbolic}; the best judges agree with experts about 86\% of the time~\citep{chen2025reform}, and in specification autoformalization a judge missed a quarter of the failures that an executable check caught~\citep{verusspecgym2026}. Prover-based methods trust an automated prover to establish equivalence with a reference~\citep{liu2025rethinking,poiroux2025reliable,murphy2024leaneuclid}, and so need both a reference and a proof search that may time out. Every method above needs a human, a model, or an incomplete prover somewhere in the loop. 
  
 \paragraph{Synthetic language with exact ground truth.}
 Synthetic and semi-synthetic reasoning benchmarks construct
@@ -197,7 +196,7 @@ and template-assisted stories and also evaluates
 natural-language-to-first-order-logic translation~\citep{han2022folio}.
  
 \paragraph{Staged formalization.}
-Passing through an intermediate representation on the way to a formal target is an old idea in semantic parsing, whether a canonical utterance~\cite{shin2021constrained} or an intermediate query language~\cite{guo2019irnet,gan2021natsql}. Prompting methods that first abstract a problem~\cite{zheng2023stepback} or draft an informal sketch~\cite{jiang2023dsp} follow the same pattern, and formalize-then-solve pipelines identify translation as a major source of error~\cite{olausson2023linc,pan2023logiclm,ye2023satlm,lyu2023faithfulcot}, motivating decomposition of the translation step~\cite{ryu2024divide}. The remedies proposed for autoformalization add a verifier or a feedback loop: reflective refinement~\cite{chen2025reform}, faithfulness-guided decoding~\cite{mohammad2026faithfulness}, or reranking candidates by symbolic equivalence~\cite{li2024symbolic}. Our two-stage route uses neither. It changes only how the model is asked, and it composes with any of them.
+Passing through an intermediate representation on the way to a formal target is an old idea in semantic parsing, whether a canonical utterance~\citep{shin2021constrained} or an intermediate query language~\citep{guo2019irnet,gan2021natsql}. Prompting methods that first abstract a problem~\citep{zheng2023stepback} or draft an informal sketch~\citep{jiang2023dsp} follow the same pattern, and formalize-then-solve pipelines identify translation as a major source of error~\citep{olausson2023linc,pan2023logiclm,ye2023satlm,lyu2023faithfulcot}, motivating decomposition of the translation step~\citep{ryu2024divide}. The remedies proposed for autoformalization add a verifier or a feedback loop: reflective refinement~\citep{chen2025reform} or reranking candidates by symbolic equivalence~\citep{li2024symbolic}. Our two-stage route uses neither. It changes only how the model is asked, and it composes with any of them.
 
 
 \section{Constructing the Benchmark} 
@@ -416,8 +415,8 @@ Under the two-stage protocol, we prompt the model to abstract the problem before
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.85\columnwidth, height=0.42\textheight, keepaspectratio]{f2_arms_by_model-newer.jpg}
-\caption{ Faithfulness by surface form, per model (nine models, 160
+\includegraphics[width=0.85\columnwidth, height=0.43\textheight, keepaspectratio]{f2_arms_by_model-newer.jpg}
+\caption{Faithfulness by surface form, per model (nine models, 160
 stratified pairs, no reasoning, vacuous laws excluded). 
  Story accuracy trails
 literal accuracy for nearly every model; the two-stage protocol, which inserts one
@@ -545,7 +544,7 @@ gpt-5-mini & 1248 & 832 & 1.50 \\
 \end{tabular}
 \end{table}
 
-\denis{need to fix Figure 5, consider only keeping the 2 main lines}
+% \denis{need to fix Figure 5, consider only keeping the 2 main lines}
 
 \begin{figure}[H]
 \centering
