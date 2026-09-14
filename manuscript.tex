@@ -34,6 +34,8 @@
 \usepackage{nicefrac}       % compact symbols for 1/2, etc.
 \usepackage{microtype}      % microtypography
 \usepackage{xcolor}         % colors
+\usepackage[most]{tcolorbox}
+\newtcolorbox{promptbox}{breakable,enhanced,colback=white,colframe=black,boxrule=0.4pt,arc=0pt,left=4pt,right=4pt,top=4pt,bottom=4pt}
 
 % Note. For the workshop paper template, both \title{} and \workshoptitle{} are required, with the former indicating the paper title shown in the title and the latter indicating the workshop title displayed in the footnote. 
 \title{Deterministically Measuring Autoformalization Faithfulness}
@@ -59,7 +61,6 @@
 
 \newcommand{\aditya}[1]{\textcolor{orange}{(aditya: #1)}}
 
-\newcommand{\hide}[1]{}
 
 \author{%
   David S.~Hippocampus\thanks{Use footnote for providing further information
@@ -412,7 +413,7 @@ Rendering ETP mathematical statements as  stories rather than literal descriptio
 Under the two-stage protocol, we prompt the model to abstract the problem before formalizing, where it first strips away the narrative to produce a notation-free logical summary, and then translate into the target syntax. This intermediate step recovers a per-model median of $99\%$ of the story-to-literal performance drop, boosting the pooled story accuracy to $66\%$, effectively matching the literal baseline. This suggests the failure mode that models struggle to identify the core logical claim in a decorated narrative, but are able to translate more faithfully once the claim is isolated.
 
 
-\begin{figure}[t]
+\begin{figure}[H]
 \centering
 \includegraphics[width=0.85\columnwidth, height=0.40\textheight, keepaspectratio]{f2_arms_by_model-newer.jpg}
 \caption{Faithfulness by surface form, per model (nine models, 105
@@ -430,7 +431,7 @@ are Wilson 95\% intervals.}
 \label{sec:reasoning}
 For this comparison we drew a separate, smaller sample of 24 pairs (40 sampled, minus those with a zero-operation law) and ran eight models on it twice, once with reasoning off and once with reasoning on. When reasoning capabilities are enabled, translation accuracy improves substantially across all three surface forms to near-ceiling levels. Notably, the narrative penalty plays a much smaller role when there is more compute, as we see that most of the models still reach near perfect translation accuracy from story surface form. Pooled over the eight models, story accuracy surges from $40\%$ to $97\%$, literal accuracy from $62\%$ to $99\%$, and two-stage accuracy from $59\%$ to $96\%$ (Figure~\ref{fig:reasoning}). The explicit benefits of the two-stage pipeline are subsumed when a model is allowed to perform that abstraction internally via extended deliberation.
 
-\begin{figure}[t]
+\begin{figure}[H]
 \centering
 \includegraphics[width=\columnwidth, height=0.32\textheight, keepaspectratio]{r2_bars_by_model-newer.jpg}
 \caption{ Faithfulness with reasoning disabled (light) versus enabled (dark),
@@ -450,7 +451,7 @@ with reasoning enabled. Every model spends more on the story than on the
 literal description of the same statement. Section~\ref{sec:complexity}
 extends this comparison to harder statements.
 
-\begin{table}[t]
+\begin{table}[H]
 \centering
 \caption{Median reasoning tokens spent per item on matched pairs, with
 reasoning enabled (five reasoning-capable models). Each model consistently
@@ -471,12 +472,12 @@ gpt-5-mini & 1248 & 832 & 1.50 \\
 
 
 
-\subsection{Reasoning removes the complexity cliff}
+\subsection{Reasoning significantly improves translation accuracy across complexity}
 \label{sec:complexity}
 
 To test how faithfulness holds up on harder statements, we extended our difficulty axis beyond the Equational Theories Project (ETP) limit of four operations, generating synthetic laws with up to ten operations per equation. This section uses the five models with a native reasoning mode, so accuracy and token spend come from the same runs. Without reasoning, accuracy collapses as complexity grows, dropping from $82\%$ at one operation per equation to $0\%$ at ten on the story form. With reasoning enabled, the same five models translate stories from one-operation equations with $100\%$ accuracy and degrade gracefully from there, still recovering $75\%$ of story statements and $81\%$ of literal statements at ten operations per equation (Figure~\ref{fig:cliff}). Their reasoning effort scales with the task: median thinking tokens rise monotonically with operation count, and stories cost more than literal descriptions at every level, with the gap widening as statements get harder (Figure~\ref{fig:tokens-complexity}). 
 
-\begin{figure}[t]
+\begin{figure}[H]
 \centering
 \includegraphics[width=\columnwidth]{accuracy_on_vs_off-new.jpg}
 \caption{Faithfulness against complexity with reasoning disabled versus
@@ -486,7 +487,7 @@ chiefly a matter of deliberation budget rather than a representational limit.}
 \label{fig:cliff}
 \end{figure}
 
-\begin{figure}[t]
+\begin{figure}[H]
 \centering
 \includegraphics[width=0.5\columnwidth]{tokens_vs_complexity-new.jpg}
 \caption{Median reasoning tokens per item against statement complexity (five
@@ -555,6 +556,7 @@ measured.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\raggedbottom
 \appendix
 
 \section{Prompts}
