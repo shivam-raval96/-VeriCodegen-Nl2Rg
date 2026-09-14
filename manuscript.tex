@@ -11,7 +11,8 @@
 
 % this is comment
 
-\usepackage{neurips_2026_vericode}
+% \usepackage{neurips_2026_vericode}
+\usepackage[final]{neurips_2026_vericode}
 
 % After being accepted, the authors should add "final" behind the track to compile a camera-ready version.
 % \usepackage[main, final]{neurips_2026_vericode}
@@ -60,39 +61,31 @@
 \newcommand{\Ke}[1]{\textcolor{blue}{(Ke: #1)}}
 
 \newcommand{\aditya}[1]{\textcolor{orange}{(aditya: #1)}}
-
-
 \author{%
-  David S.~Hippocampus\thanks{Use footnote for providing further information
-    about author (webpage, alternative address)---\emph{not} for acknowledging
-    funding agencies.} \\
-  Department of Computer Science\\
-  Cranberry-Lemon University\\
-  Pittsburgh, PA 15213 \\
-  \texttt{hippo@cs.cranberry-lemon.edu} \\
-  % examples of more authors
-  % \And
-  % Coauthor \\
-  % Affiliation \\
-  % Address \\
-  % \texttt{email} \\
-  % \AND
-  % Coauthor \\
-  % Affiliation \\
-  % Address \\
-  % \texttt{email} \\
-  % \And
-  % Coauthor \\
-  % Affiliation \\
-  % Address \\
-  % \texttt{email} \\
-  % \And
-  % Coauthor \\
-  % Affiliation \\
-  % Address \\
-  % \texttt{email} \\
+  Oren Emile Hartstein\thanks{Equal contribution.} \\
+  Columbia University \\
+  \texttt{oeh2104@columbia.edu} \\
+  \And
+  Denis Federico Lim\footnotemark[1] \\
+  Cambridge AI Safety Hub \\
+  \texttt{denislim95@gmail.com} \\
+  \And
+  Harsh Soni \\
+  UC Berkeley \\
+  \texttt{harsh.soni@berkeley.edu} \\
+  \AND
+  Ke Zhang \\
+  UC Irvine \\
+  \texttt{kzhan153@ucr.edu} \\
+  \And
+  Luiza Corpaci \\
+  Independent \\
+  \texttt{email} \\
+  \And
+  Shivam Raval \\
+  Harvard \\
+  \texttt{email} \\
 }
-
 
 \begin{document}
 
@@ -489,7 +482,7 @@ chiefly a matter of deliberation budget rather than a representational limit.}
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.5\columnwidth]{tokens_vs_complexity-new.jpg}
+\includegraphics[width=0.65\columnwidth]{tokens_vs_complexity-new.jpg}
 \caption{Median reasoning tokens per item against statement complexity (five
 reasoning-capable models, synthetic laws of one to ten operations per
 equation, reasoning enabled). Bold lines are pooled medians, faint lines are
@@ -557,12 +550,12 @@ measured.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \raggedbottom
+\clearpage
 \appendix
 
 \section{Prompts}
 \subsection{Story Prompt}
-\noindent\fbox{%
-\begin{minipage}{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}
+\begin{promptbox}
 \footnotesize
 \raggedright
 
@@ -659,12 +652,10 @@ ASK: op(atlas, ledger) = op(ledger, atlas)
 Now translate this story. End your response with the two lines,
 \texttt{ASSUME:} and \texttt{ASK:}, in the notation defined above.
 
-\end{minipage}%
-}
+\end{promptbox}
 
 \subsection{Literal-NL Prompt}
-\noindent\fbox{%
-\begin{minipage}{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}
+\begin{promptbox}
 \footnotesize
 \raggedright
 
@@ -776,11 +767,10 @@ ASK: op(x, y) = op(y, x)
 Now translate this description. End your response with the two lines,
 \texttt{ASSUME:} and \texttt{ASK:}, in the notation defined above.
 
-\end{minipage}%
-}
+\end{promptbox}
+
 \subsection{Two-Stage Pipeline Prompt: Stage 1}
-\noindent\fbox{%
-\begin{minipage}{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}
+\begin{promptbox}
 \footnotesize
 \raggedright
 
@@ -905,8 +895,7 @@ follow that Value~1 is always equal to Value~2?
 Now rewrite this story. End your response with the three paragraphs of the
 description, and nothing after them.
 
-\end{minipage}%
-}
+\end{promptbox}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \input{checklist.tex}
